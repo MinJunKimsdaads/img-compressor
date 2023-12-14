@@ -1,0 +1,19 @@
+{
+  "name": "imagecompressor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "MinJunKimsdaads",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "type": "module"
+}
