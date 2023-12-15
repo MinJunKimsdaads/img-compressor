@@ -62,7 +62,8 @@ app.post('/compress',upload.single('image'),async(req,res)=>{
 
         const compressedImagePath = files[0].destinationPath;
         // res.json({ compressedImagePath });
-        res.redirect(`file:///C:/Users/케이아트코리아/test/imageCompressor/index.html?compressedImagePath=${compressedImagePath}`);
+        // res.redirect(`file:///C:/Users/케이아트코리아/test/imageCompressor/index.html?compressedImagePath=${compressedImagePath}`);
+        res.send('success');
     }catch(error){
         console.error('이미지 압축 중 오류:', error);
         res.status(500).send('이미지 압축 중 오류 발생');
