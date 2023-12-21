@@ -30,15 +30,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Multer 설정
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) { // 이미지를 저장할 폴더 설정
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) { // 확장자를 붙여서 파일명 설정
-        const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + Date.now() + ext);
-    },
-});
+const storage = multer.memoryStorage(); //메모리저장
 
 //이미지 업로드할 폴더 설정
 const upload = multer({
@@ -48,31 +40,21 @@ const upload = multer({
 
 app.post('/compress',upload.single('image'),async(req,res)=>{
     try{
-        console.log(req.body.quality);
-        const files = await imagemin([`uploads`],{
-            destination:'compressed/',
-            plugins:[
+        const buffer = req.file.buffer;
+
+        const compressedBuffer = await imagemin.buffer(buffer, {
+            plugins: [
                 imageminMozjpeg({ quality: req.body.quality }),
-                imageminPngquant({ quality: [req.body.quality/10, req.body.quality/10] }),
-            ]
-        })
-        const compressedImagePath = files[0].destinationPath;
-        const compressedImageFilename = path.basename(compressedImagePath);
-        res.json({ success: true, compressedImagePath: compressedImageFilename });
+                imageminPngquant({ quality: [req.body.quality / 10, req.body.quality / 10] }),
+            ],
+        });
+
+        res.send(compressedBuffer);
     }catch(error){
         console.error('이미지 압축 중 오류:', error);
         res.status(500).send('이미지 압축 중 오류 발생');
     }
 })
-
-app.get('/download/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, 'compressed', filename);
-    //a 태그에서 다운로드 가능하도록 헤더 설정
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.sendFile(filePath);
-});
 
 app.listen(PORT, ()=>{
     console.log('connect');

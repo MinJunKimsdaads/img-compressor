@@ -30,6 +30,7 @@
             padding: 25px;
             max-width: 610px;
             background-color: white;
+            margin-top: 25px;
         }
 
         #title{
@@ -62,10 +63,11 @@
 
         label[for="image"]{
             display: inline-flex;
-            padding: 0 20px 0 20px;
+            width: 50px;
+            padding: 0 10px 0 10px;
             color: #fff;
             vertical-align: middle;
-            background-color: #999999;
+            background-color: #32245e;
             cursor: pointer;
             height: 40px;
             margin-left: 10px;
@@ -142,14 +144,28 @@
             cursor: pointer;
             font-weight: 700;
             font-size: 18px;
+        }   
+
+        input[type='submit']{
+            display: inline-flex;
+            width: 50px;
+            padding: 0 10px 0 10px;
+            color: #fff;
+            vertical-align: middle;
+            background-color: #32245e;
+            cursor: pointer;
+            height: 40px;
+            margin-left: 10px;
+            justify-content: center;
+            align-items: center;
+            outline: none;
+            border: none;
         }
 
-        
-
-
-        
-
-        
+        .lock{
+            pointer-events: none !important;
+            background-color: #999999 !important;
+        }
     </style>
 </head>
 <body>
@@ -159,10 +175,11 @@
         <form id="uploadForm" action="http://localhost:8000/compress" method="post" enctype="multipart/form-data">
             <div style="display:flex;justify-content: space-between;margin-bottom: 20px;">
                 <input id="uploadName" placeholder="첨부파일" value="첨부파일" readonly>
-                <label for="image">검색</label> 
+                <label for="image">검색</label>
+                <input type="submit" id='submit' class="lock" value="업로드">
             </div>
             <input type="file" id="image" name="image" accept="image/png, image/jpeg" />
-            <input type="hidden" name="quality">
+            <input type="hidden" name="quality" id="quality">
         </form>
         
         <div id="previewBox"></div>
@@ -176,13 +193,12 @@
         </div>
         
         <div id='btnWrap'>
-            <div id="previewBtn">미리보기</div>
-            <div id="downloadBtn">다운로드</div>
+            <div id="previewBtn" class="lock">미리보기</div>
+            <div id="downloadBtn" class="lock">다운로드</div>
         </div>
     </div>
     
     <script>
-
 
         //업로드 이미지 미리보기
         document.getElementById('image').addEventListener('change',()=>{
@@ -198,6 +214,8 @@
                 reader.onload = function(e){
                     document.getElementById('previewBox').style.backgroundImage = `url("${e.target.result}")`;
                     document.getElementById('previewBox').style.display = 'block';
+
+                    document.getElementById('submit').classList.remove('lock');
                 }
             }
         })
@@ -241,59 +259,85 @@
             }
             
         })
-        
-        
-        //최적화된 이미지 미리보기
 
         //이미지 업로드 submit
-        let filename = '';
+        let filename = null;
         document.getElementById('uploadForm').addEventListener('submit', async (event) => {
             event.preventDefault();
+
+            if(document.getElementById('inputQuality').value > 100 || document.getElementById('inputQuality').value < 0){
+                document.getElementById('quality').value = 50;
+            }else{
+                document.getElementById('quality').value = document.getElementById('inputQuality').value;
+            }
 
             const formData = new FormData(event.target);
 
             try {
-                // Upload image and get compressed image path
                 const response = await fetch('http://localhost:8000/compress', {
                     method: 'POST',
                     body: formData,
                 });
 
-                const result = await response.json();
-                if (result.success) {
-                    alert('Image uploaded and compressed successfully!');
-                    console.log(result);
-                    filename = result.compressedImagePath;
+                if (response.ok) {
+                    alert('업로드 성공');
+                    filename = await response.blob();
+
+                    document.getElementById('previewBtn').classList.remove('lock');
+                    document.getElementById('downloadBtn').classList.remove('lock');
                 } else {
-                    alert('Error during image compression');
+                    alert('업로드 실패');
                 }
             } catch (error) {
-                console.error('Error during image upload:', error);
+                console.error('업로드 실패:', error);
             }
         });
 
-        //압축한 이미지 다운로드
-        document.getElementById('downloadBtn').addEventListener('click', async () => {
-            try {
-                console.log(filename);
-                // Fetch compressed image link from the server
-                const response = await fetch(`http://localhost:8000/download/${filename}`); // Adjust the filename accordingly
-                const link = await response;
-
-                // Download the compressed image
+        //최적화된 이미지 다운로드
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (filename) {
                 const a = document.createElement('a');
-                console.log(link);
-                a.href = link.url;
-                a.download = 'down'; // Adjust the filename accordingly
+
+                const blobUrl = URL.createObjectURL(filename);
+
+                a.href = blobUrl;
+                a.download = 'compressed_image.jpg';
+
                 document.body.appendChild(a);
+
                 a.click();
+
                 document.body.removeChild(a);
-            } catch (error) {
-                console.error('Download error:', error);
+
+                // URL.revokeObjectURL(blobUrl);
+            } else {
+                alert('이미지를 업로드 필요');
             }
         });
 
-        //유효성 검사
+        //최적화된 이미지 미리보기
+        document.getElementById('previewBtn').addEventListener('click', () => {
+            if (filename) {
+                // 팝업 생성
+                const popupWindow = window.open('', 'Image Preview', 'width=600,height=400');
+                const imgElement = document.createElement('img');
+
+                const blobUrl = URL.createObjectURL(filename);
+
+                imgElement.src = blobUrl;
+                imgElement.style.width = '100%';
+                imgElement.style.height = '100%';
+
+                popupWindow.document.body.appendChild(imgElement);
+
+                popupWindow.document.body.addEventListener('click', () => {
+                    popupWindow.close();
+                });
+
+            } else {
+                alert('이미지를 업로드 필요');
+            }
+        });
     </script>
 </body>
 </html>
