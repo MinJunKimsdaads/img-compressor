@@ -19,10 +19,3 @@
 
 <img src="image">
 
-<h3>소감</h3>
-<p></p>
-<p></p>
-<p></p>
-
-<a href="link">Demo</a>
-
