@@ -20,5 +20,7 @@
 <h3>사용방법</h3>
 <p>로컬서버 오픈 후 html에서 이미지 업로드 후 퀄리티 조절해서 폴더에 자동저장<p>
 
-<img src="image">
+<img src="http://aaeexx.dothome.co.kr/project/image/img-compressor/1.gif">
+<img src="http://aaeexx.dothome.co.kr/project/image/img-compressor/2.gif">
+<img src="http://aaeexx.dothome.co.kr/project/image/img-compressor/3.gif">
 
